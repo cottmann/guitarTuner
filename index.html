@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <title>Guitar Tuner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      overscroll-behavior: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 to-slate-800 min-h-screen">
+  <div class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <div class="bg-slate-800 rounded-2xl shadow-2xl p-8">
+        <h1 class="text-3xl font-bold text-white text-center mb-8">
+          Guitar Tuner
+        </h1>
+
+        <div id="error-message" class="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded mb-6 hidden">
+        </div>
+
+        <div class="flex justify-center mb-8">
+          <button
+            id="mic-button"
+            class="p-6 rounded-full transition-all bg-blue-500 hover:bg-blue-600"
+          >
+            <svg id="mic-icon" class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+            </svg>
+            <svg id="mic-off-icon" class="w-12 h-12 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+            </svg>
+          </button>
+        </div>
+
+        <div id="tuner-display" class="space-y-6 hidden">
+          <div class="text-center">
+            <div id="note-display" class="text-7xl font-bold text-white mb-2">
+              --
+            </div>
+            <div id="frequency-display" class="text-2xl text-slate-300">
+              0.00 Hz
+            </div>
+          </div>
+
+          <div class="text-center">
+            <div id="cents-display" class="text-6xl font-bold text-slate-400 transition-colors">
+              0
+            </div>
+            <div class="text-xl text-slate-400 mt-1">cents</div>
+          </div>
+
+          <div class="bg-slate-700 rounded-lg p-4">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-slate-400">Flat</span>
+              <span id="tuning-text" class="font-bold text-white">
+                --
+              </span>
+              <span class="text-slate-400">Sharp</span>
+            </div>
+
+            <div class="relative h-8 bg-slate-600 rounded-full overflow-hidden">
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-1 h-8 bg-white"></div>
+              </div>
+              <div
+                id="tuning-indicator"
+                class="absolute top-0 bottom-0 w-2 bg-slate-400 transition-all duration-100"
+                style="left: calc(50% - 4px); opacity: 0;"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="start-message" class="text-center text-slate-400 mb-6">
+          Tap the microphone to start tuning
+        </div>
+
+        <div class="mt-8 border-t border-slate-700 pt-6">
+          <h3 class="text-sm font-semibold text-slate-300 mb-3">Standard Tuning</h3>
+          <div class="grid grid-cols-6 gap-2">
+            <div class="bg-slate-700 rounded p-2 text-center">
+              <div class="text-xs text-slate-400">6</div>
+              <div class="font-bold text-white">E2</div>
+            </div>
+            <div class="bg-slate-700 rounded p-2 text-center">
+              <div class="text-xs text-slate-400">5</div>
+              <div class="font-bold text-white">A2</div>
+            </div>
+            <div class="bg-slate-700 rounded p-2 text-center">
+              <div class="text-xs text-slate-400">4</div>
+              <div class="font-bold text-white">D3</div>
+            </div>
+            <div class="bg-slate-700 rounded p-2 text-center">
+              <div class="text-xs text-slate-400">3</div>
+              <div class="font-bold text-white">G3</div>
+            </div>
+            <div class="bg-slate-700 rounded p-2 text-center">
+              <div class="text-xs text-slate-400">2</div>
+              <div class="font-bold text-white">B3</div>
+            </div>
+            <div class="bg-slate-700 rounded p-2 text-center">
+              <div class="text-xs text-slate-400">1</div>
+              <div class="font-bold text-white">E4</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker registered'))
+        .catch(err => console.log('Service Worker registration failed'));
+    }
+
+    // Guitar Tuner Logic
+    let isListening = false;
+    let audioContext = null;
+    let analyser = null;
+    let dataArray = null;
+    let source = null;
+    let rafId = null;
+
+    const allNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+    // DOM elements
+    const micButton = document.getElementById('mic-button');
+    const micIcon = document.getElementById('mic-icon');
+    const micOffIcon = document.getElementById('mic-off-icon');
+    const errorMessage = document.getElementById('error-message');
+    const tunerDisplay = document.getElementById('tuner-display');
+    const startMessage = document.getElementById('start-message');
+    const noteDisplay = document.getElementById('note-display');
+    const frequencyDisplay = document.getElementById('frequency-display');
+    const centsDisplay = document.getElementById('cents-display');
+    const tuningText = document.getElementById('tuning-text');
+    const tuningIndicator = document.getElementById('tuning-indicator');
+
+    function getNoteFromFrequency(freq) {
+      const noteNum = 12 * (Math.log(freq / 440) / Math.log(2));
+      const roundedNote = Math.round(noteNum) + 69;
+      const noteName = allNotes[roundedNote % 12];
+      const octave = Math.floor(roundedNote / 12) - 1;
+      const cents = Math.floor((noteNum - Math.round(noteNum)) * 100);
+      return { note: `${noteName}${octave}`, cents };
+    }
+
+    function autoCorrelate(buffer, sampleRate) {
+      let size = buffer.length;
+      let maxSamples = Math.floor(size / 2);
+      let bestOffset = -1;
+      let bestCorrelation = 0;
+      let rms = 0;
+
+      // Calculate RMS
+      for (let i = 0; i < size; i++) {
+        rms += buffer[i] * buffer[i];
+      }
+      rms = Math.sqrt(rms / size);
+
+      if (rms < 0.01) return -1;
+
+      // Find the best correlation
+      let lastCorrelation = 1;
+      for (let offset = 1; offset < maxSamples; offset++) {
+        let correlation = 0;
+        for (let i = 0; i < maxSamples; i++) {
+          correlation += Math.abs(buffer[i] - buffer[i + offset]);
+        }
+        correlation = 1 - (correlation / maxSamples);
+
+        if (correlation > 0.9 && correlation > lastCorrelation) {
+          const foundGoodCorrelation = correlation > bestCorrelation;
+          if (foundGoodCorrelation) {
+            bestCorrelation = correlation;
+            bestOffset = offset;
+          }
+        }
+        lastCorrelation = correlation;
+      }
+
+      if (bestCorrelation > 0.01) {
+        return sampleRate / bestOffset;
+      }
+      return -1;
+    }
+
+    function getTuningColor(cents) {
+      const absCents = Math.abs(cents);
+      if (absCents < 5) return 'bg-green-500';
+      if (absCents < 15) return 'bg-yellow-500';
+      return 'bg-red-500';
+    }
+
+    function getCentsColor(cents) {
+      const absCents = Math.abs(cents);
+      if (absCents < 5) return 'text-green-400';
+      if (absCents < 15) return 'text-yellow-400';
+      return 'text-red-400';
+    }
+
+    function getTuningText(cents) {
+      const absCents = Math.abs(cents);
+      if (absCents < 5) return 'In Tune!';
+      if (cents > 0) return 'Too Sharp ↑';
+      return 'Too Flat ↓';
+    }
+
+    function updatePitch() {
+      if (!analyser || !dataArray) return;
+
+      analyser.getFloatTimeDomainData(dataArray);
+      const frequency = autoCorrelate(dataArray, audioContext.sampleRate);
+
+      if (frequency > 0 && frequency < 1000) {
+        const { note, cents } = getNoteFromFrequency(frequency);
+
+        noteDisplay.textContent = note;
+        frequencyDisplay.textContent = `${frequency.toFixed(2)} Hz`;
+        centsDisplay.textContent = `${cents > 0 ? '+' : ''}${cents}`;
+        centsDisplay.className = `text-6xl font-bold ${getCentsColor(cents)} transition-colors`;
+
+        tuningText.textContent = getTuningText(cents);
+        tuningText.className = `font-bold ${Math.abs(cents) < 5 ? 'text-green-400' : 'text-white'}`;
+
+        tuningIndicator.className = `absolute top-0 bottom-0 w-2 ${getTuningColor(cents)} transition-all duration-100`;
+        tuningIndicator.style.left = `calc(50% + ${(cents / 50) * 50}% - 4px)`;
+        tuningIndicator.style.opacity = Math.min(Math.abs(cents) / 50, 1);
+      }
+
+      rafId = requestAnimationFrame(updatePitch);
+    }
+
+    async function startListening() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 4096;
+
+        const bufferLength = analyser.fftSize;
+        dataArray = new Float32Array(bufferLength);
+
+        source = audioContext.createMediaStreamSource(stream);
+        source.connect(analyser);
+
+        isListening = true;
+        micButton.className = 'p-6 rounded-full transition-all bg-red-500 hover:bg-red-600 animate-pulse';
+        micIcon.classList.add('hidden');
+        micOffIcon.classList.remove('hidden');
+        errorMessage.classList.add('hidden');
+        tunerDisplay.classList.remove('hidden');
+        startMessage.classList.add('hidden');
+
+        updatePitch();
+      } catch (err) {
+        errorMessage.textContent = 'Microphone access denied. Please allow microphone access.';
+        errorMessage.classList.remove('hidden');
+        console.error('Error accessing microphone:', err);
+      }
+    }
+
+    function stopListening() {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+      if (source) {
+        source.disconnect();
+      }
+      if (audioContext) {
+        audioContext.close();
+      }
+
+      isListening = false;
+      micButton.className = 'p-6 rounded-full transition-all bg-blue-500 hover:bg-blue-600';
+      micIcon.classList.remove('hidden');
+      micOffIcon.classList.add('hidden');
+      tunerDisplay.classList.add('hidden');
+      startMessage.classList.remove('hidden');
+
+      noteDisplay.textContent = '--';
+      frequencyDisplay.textContent = '0.00 Hz';
+      centsDisplay.textContent = '0';
+    }
+
+    micButton.addEventListener('click', () => {
+      if (isListening) {
+        stopListening();
+      } else {
+        startListening();
+      }
+    });
+
+    // Prevent zoom on double tap
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (event) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+  </script>
+</body>
+</html>
