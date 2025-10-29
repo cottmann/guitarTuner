@@ -12,6 +12,38 @@ A chromatic guitar tuner that runs locally in your mobile browser as a Progressi
 - **Mobile-optimized** interface
 - **Installable** as a native-like app on iOS and Android
 
+## Live Demo
+
+Visit the live app at: `https://[your-username].github.io/guitarTuner/`
+
+## Deployment to GitHub Pages
+
+### Automatic Deployment (Recommended)
+
+1. **Merge your branch to main:**
+   ```bash
+   git checkout main
+   git merge claude/guitar-tuner-pwa-011CUc1gtehuMJmp9MnDm3eF
+   git push origin main
+   ```
+
+2. **Enable GitHub Pages:**
+   - Go to your repository on GitHub
+   - Click **Settings** → **Pages**
+   - Under "Build and deployment":
+     - Source: **GitHub Actions**
+   - The workflow will automatically deploy on push to main
+
+3. **Access your app:**
+   - After deployment completes, visit: `https://[your-username].github.io/guitarTuner/`
+
+### Manual Deployment (Alternative)
+
+1. Go to repository **Settings** → **Pages**
+2. Under "Source", select **Deploy from a branch**
+3. Select branch: **main** and folder: **/ (root)**
+4. Click **Save**
+
 ## Installation
 
 ### Desktop Testing
