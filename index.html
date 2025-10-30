@@ -128,6 +128,30 @@
         </div>
 
         <div class="mt-6 border-t border-slate-700 pt-6">
+          <h3 class="text-sm font-semibold text-slate-300 mb-3">Smoothing</h3>
+          <div class="space-y-2">
+            <div class="flex items-center gap-3">
+              <label for="smoothing-slider" class="text-sm text-slate-400 w-24">Stability:</label>
+              <input
+                type="range"
+                id="smoothing-slider"
+                min="1"
+                max="10"
+                value="3"
+                step="1"
+                class="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+              <span id="smoothing-value" class="text-sm text-slate-300 w-16 text-center">3 frames</span>
+            </div>
+            <div class="flex justify-between text-xs text-slate-500">
+              <span>Fast (jittery)</span>
+              <span>Stable (slower)</span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Adjust how much the readings are smoothed</p>
+        </div>
+
+        <div class="mt-6 border-t border-slate-700 pt-6">
           <h3 class="text-sm font-semibold text-slate-300 mb-3">Calibration</h3>
           <div class="flex items-center gap-3">
             <label for="ref-freq" class="text-sm text-slate-400">A4 =</label>
@@ -173,7 +197,7 @@
 
     // Smoothing for more stable readings
     let frequencyHistory = [];
-    const smoothingFrames = 3;
+    let smoothingFrames = 3; // Adjustable via slider (1-10)
 
     const allNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
@@ -189,6 +213,8 @@
     const centsDisplay = document.getElementById('cents-display');
     const tuningText = document.getElementById('tuning-text');
     const tuningIndicator = document.getElementById('tuning-indicator');
+    const smoothingSlider = document.getElementById('smoothing-slider');
+    const smoothingValue = document.getElementById('smoothing-value');
     const refFreqInput = document.getElementById('ref-freq');
     const resetCalibrationBtn = document.getElementById('reset-calibration');
 
@@ -372,6 +398,16 @@
       }
     });
 
+    // Smoothing control
+    smoothingSlider.addEventListener('input', (e) => {
+      smoothingFrames = parseInt(e.target.value);
+      smoothingValue.textContent = `${smoothingFrames} frame${smoothingFrames > 1 ? 's' : ''}`;
+      localStorage.setItem('guitarTunerSmoothing', smoothingFrames);
+
+      // Clear history when changing smoothing to avoid mixing different amounts
+      frequencyHistory = [];
+    });
+
     // Calibration controls
     refFreqInput.addEventListener('change', (e) => {
       const newFreq = parseFloat(e.target.value);
@@ -387,11 +423,18 @@
       localStorage.removeItem('guitarTunerRefFreq');
     });
 
-    // Load saved calibration
+    // Load saved settings
     const savedRefFreq = localStorage.getItem('guitarTunerRefFreq');
     if (savedRefFreq) {
       referenceFreq = parseFloat(savedRefFreq);
       refFreqInput.value = savedRefFreq;
+    }
+
+    const savedSmoothing = localStorage.getItem('guitarTunerSmoothing');
+    if (savedSmoothing) {
+      smoothingFrames = parseInt(savedSmoothing);
+      smoothingSlider.value = smoothingFrames;
+      smoothingValue.textContent = `${smoothingFrames} frame${smoothingFrames > 1 ? 's' : ''}`;
     }
 
     // Prevent zoom on double tap
